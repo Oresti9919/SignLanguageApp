@@ -1,0 +1,64 @@
+import cv2
+import uuid
+import os
+import time
+
+# Install required packages
+!pip install opencv-python
+!pip install --upgrade pyqt5 lxml
+
+# Import necessary modules
+import cv2
+import uuid
+import os
+import time
+
+# Set constants
+labels = ['1', '2', '3', '4']
+number_imgs = 5
+IMAGES_PATH = os.path.join('Tensorflow', 'workspace', 'images', 'collectedimages')
+LABELIMG_PATH = os.path.join('Tensorflow', 'labelimg')
+
+# Function to create directories for labels
+def create_label_directories():
+    if not os.path.exists(IMAGES_PATH):
+        if os.name == 'posix':
+            !mkdir -p {IMAGES_PATH}
+        if os.name == 'nt':
+            !mkdir {IMAGES_PATH}
+    for label in labels:
+        path = os.path.join(IMAGES_PATH, label)
+        if not os.path.exists(path):
+            !mkdir {path}
+
+# Function to capture images for each label
+def capture_images():
+    for label in labels:
+        cap = cv2.VideoCapture(0)
+        print('Collecting images for {}'.format(label))
+        time.sleep(5)
+        for imgnum in range(number_imgs):
+            print('Collecting image {}'.format(imgnum))
+            ret, frame = cap.read()
+            imgname = os.path.join(IMAGES_PATH, label, label + '.' + '{}.jpg'.format(str(uuid.uuid1())))
+            cv2.imwrite(imgname, frame)
+            cv2.imshow('frame', frame)
+            time.sleep(2)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        cap.release()
+        cv2.destroyAllWindows()
+
+# Function to run LabelImg tool
+def run_labelimg():
+    if os.name == 'posix':
+        !make qt5py3 && pyrcc5
+    if os.name == 'nt':
+        !cd {LABELIMG_PATH} && pyrcc5 -o libs/resources.py resources.qrc
+    !cd {LABELIMG_PATH} && python labelImg.py
+
+# Call functions to execute the tasks
+create_label_directories()
+capture_images()
+run_labelimg()
